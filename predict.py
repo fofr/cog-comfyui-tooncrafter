@@ -99,11 +99,12 @@ class Predictor(BasePredictor):
         toon_crafter_interpolation["seed"] = kwargs["seed"]
 
         video_helper = workflow["29"]["inputs"]
+        video_upscaler = workflow["73"]["inputs"]
 
         if not kwargs["color_correction"]:
             del workflow["67"]
             video_helper["images"] = ["58", 0]
-            image_resize["images"] = ["58", 0]
+            video_upscaler["images"] = ["58", 0]
 
         if not kwargs["interpolate"]:
             del workflow["71"]
