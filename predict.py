@@ -8,7 +8,6 @@ from PIL import Image, ExifTags
 from typing import List
 from cog import BasePredictor, Input, Path
 from comfyui import ComfyUI
-from cog_model_helpers import optimise_images
 from cog_model_helpers import seed as seed_helper
 
 OUTPUT_DIR = "/tmp/outputs"
@@ -63,19 +62,50 @@ class Predictor(BasePredictor):
 
         image.save(os.path.join(INPUT_DIR, filename))
 
-    # Update nodes in the JSON workflow to modify your workflow based on the given inputs
+    def handle_images_connections(self, workflow, total_images, is_loop):
+        batch_images = workflow["28"]["inputs"]
+        batch_images["inputcount"] = total_images + 1 if is_loop else total_images
+
+        for index in range(1, total_images + 1):
+            if index > 2:
+                load_image = {
+                    "inputs": {"image": f"input_{index}.png", "upload": "image"},
+                    "class_type": "LoadImage",
+                    "_meta": {"title": "Load Image"},
+                }
+
+                load_image_index = f"{index+300}"
+                batch_images_input = [f"{load_image_index}", 0]
+                batch_images["inputs"][f"image_{index}"] = batch_images_input
+                workflow[load_image_index] = load_image
+
+        if is_loop:
+            batch_images["inputs"][f"image_{total_images+1}"] = ["1", 0]
+
     def update_workflow(self, workflow, **kwargs):
-        # Below is an example showing how to get the node you need and update the inputs
+        self.handle_images_connections(workflow, kwargs["total_images"], kwargs["loop"])
 
-        # positive_prompt = workflow["6"]["inputs"]
-        # positive_prompt["text"] = kwargs["prompt"]
+        positive_prompt = workflow["49"]["inputs"]
+        positive_prompt["text"] = kwargs["prompt"]
 
-        # negative_prompt = workflow["7"]["inputs"]
-        # negative_prompt["text"] = f"nsfw, {kwargs['negative_prompt']}"
+        negative_prompt = workflow["50"]["inputs"]
+        negative_prompt["text"] = f"nsfw, {kwargs['negative_prompt']}"
 
-        # sampler = workflow["3"]["inputs"]
-        # sampler["seed"] = kwargs["seed"]
-        pass
+        toon_crafter_interpolation = workflow["57"]["inputs"]
+        toon_crafter_interpolation["seed"] = kwargs["seed"]
+
+        video_helper = workflow["29"]["inputs"]
+        video_upscale = workflow["70"]["inputs"]
+
+        if not kwargs["color_correction"]:
+            del workflow["67"]
+            video_helper["images"] = ["58", 0]
+            video_upscale["images"] = ["58", 0]
+
+        if not kwargs["interpolate"]:
+            del workflow["71"]
+            del workflow["72"]
+            del workflow["73"]
 
     def predict(
         self,
@@ -86,22 +116,69 @@ class Predictor(BasePredictor):
             description="Things you do not want to see in your image",
             default="",
         ),
-        image: Path = Input(
-            description="An input image",
+        image_1: Path = Input(
+            description="First input image",
+        ),
+        image_2: Path = Input(
+            description="Second input image",
+        ),
+        image_3: Path = Input(
+            description="Third input image (optional)",
             default=None,
         ),
-        output_format: str = optimise_images.predict_output_format(),
-        output_quality: int = optimise_images.predict_output_quality(),
+        image_4: Path = Input(
+            description="Fourth input image (optional)",
+            default=None,
+        ),
+        image_5: Path = Input(
+            description="Fifth input image (optional)",
+            default=None,
+        ),
+        image_6: Path = Input(
+            description="Sixth input image (optional)",
+            default=None,
+        ),
+        image_7: Path = Input(
+            description="Seventh input image (optional)",
+            default=None,
+        ),
+        image_8: Path = Input(
+            description="Eighth input image (optional)",
+            default=None,
+        ),
+        image_9: Path = Input(
+            description="Ninth input image (optional)",
+            default=None,
+        ),
+        image_10: Path = Input(
+            description="Tenth input image (optional)",
+            default=None,
+        ),
+        loop: bool = Input(
+            description="Loop the video",
+            default=False,
+        ),
+        interpolate: bool = Input(
+            description="Interpolate video",
+            default=False,
+        ),
+        color_correction: bool = Input(
+            description="Color correction",
+            default=True,
+        ),
         seed: int = seed_helper.predict_seed(),
     ) -> List[Path]:
         """Run a single prediction on the model"""
         self.comfyUI.cleanup(ALL_DIRECTORIES)
-
-        # Make sure to set the seeds in your workflow
         seed = seed_helper.generate(seed)
 
-        if image:
-            self.handle_input_file(image)
+        images = [
+            locals().get(f"image_{i}")
+            for i in range(1, 11)
+            if locals().get(f"image_{i}")
+        ]
+        for index, image in enumerate(images, start=1):
+            self.handle_input_file(image, filename=f"input_{index}.png")
 
         with open(api_json_file, "r") as file:
             workflow = json.loads(file.read())
@@ -110,13 +187,15 @@ class Predictor(BasePredictor):
             workflow,
             prompt=prompt,
             negative_prompt=negative_prompt,
+            loop=loop,
             seed=seed,
+            total_images=len(images),
+            interpolate=interpolate,
+            color_correction=color_correction,
         )
 
         wf = self.comfyUI.load_workflow(workflow)
         self.comfyUI.connect()
         self.comfyUI.run_workflow(wf)
 
-        return optimise_images.optimise_image_files(
-            output_format, output_quality, self.comfyUI.get_files(OUTPUT_DIR)
-        )
+        return self.comfyUI.get_files(OUTPUT_DIR)

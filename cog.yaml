@@ -21,6 +21,7 @@ build:
     - psutil
     - kornia>=0.7.1
     - websocket-client==1.6.3
+    - xformers
 
     # layerdiffuse
     - diffusers>=0.25.0
@@ -46,20 +47,6 @@ build:
     - pandas
     - numexpr
 
-    # comfyui-reactor-node
-    - insightface
-    - onnx
-
-    # ComfyUI-Impact-Pack
-    - segment-anything
-    - piexif
-
-    # ComfyUI-Impact-Subpack
-    - ultralytics!=8.0.177
-
-    # comfyui_segment_anything
-    - timm
-
     # comfyui_controlnet_aux
     # https://github.com/Fannovel16/comfyui_controlnet_aux/blob/main/requirements.txt
     - importlib_metadata
@@ -84,9 +71,9 @@ build:
     - librosa
     - color-matcher
 
-    # PuLID
-    - facexlib
+    # DynamicCrafter
+    - pytorch_lightning>=2.2.1
+    - open_clip_torch>=2.23.0
   run:
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.1/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
-    - pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 predict: "predict.py:Predictor"
