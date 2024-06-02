@@ -76,11 +76,11 @@ class Predictor(BasePredictor):
 
                 load_image_index = f"{index+300}"
                 batch_images_input = [f"{load_image_index}", 0]
-                batch_images["inputs"][f"image_{index}"] = batch_images_input
+                batch_images[f"image_{index}"] = batch_images_input
                 workflow[load_image_index] = load_image
 
         if is_loop:
-            batch_images["inputs"][f"image_{total_images+1}"] = ["1", 0]
+            batch_images[f"image_{total_images+1}"] = ["1", 0]
 
     def update_workflow(self, workflow, **kwargs):
         self.handle_images_connections(workflow, kwargs["total_images"], kwargs["loop"])
@@ -91,16 +91,19 @@ class Predictor(BasePredictor):
         negative_prompt = workflow["50"]["inputs"]
         negative_prompt["text"] = f"nsfw, {kwargs['negative_prompt']}"
 
+        image_resize = workflow["70"]["inputs"]
+        image_resize["width"] = kwargs["max_width"]
+        image_resize["height"] = kwargs["max_height"]
+
         toon_crafter_interpolation = workflow["57"]["inputs"]
         toon_crafter_interpolation["seed"] = kwargs["seed"]
 
         video_helper = workflow["29"]["inputs"]
-        video_upscale = workflow["70"]["inputs"]
 
         if not kwargs["color_correction"]:
             del workflow["67"]
             video_helper["images"] = ["58", 0]
-            video_upscale["images"] = ["58", 0]
+            image_resize["images"] = ["58", 0]
 
         if not kwargs["interpolate"]:
             del workflow["71"]
@@ -115,6 +118,18 @@ class Predictor(BasePredictor):
         negative_prompt: str = Input(
             description="Things you do not want to see in your image",
             default="",
+        ),
+        max_width: int = Input(
+            description="Width of the image",
+            default=512,
+            ge=256,
+            le=768,
+        ),
+        max_height: int = Input(
+            description="Height of the image",
+            default=512,
+            ge=256,
+            le=768,
         ),
         image_1: Path = Input(
             description="First input image",
@@ -173,10 +188,22 @@ class Predictor(BasePredictor):
         seed = seed_helper.generate(seed)
 
         images = [
-            locals().get(f"image_{i}")
-            for i in range(1, 11)
-            if locals().get(f"image_{i}")
+            img
+            for img in [
+                image_1,
+                image_2,
+                image_3,
+                image_4,
+                image_5,
+                image_6,
+                image_7,
+                image_8,
+                image_9,
+                image_10,
+            ]
+            if img is not None
         ]
+
         for index, image in enumerate(images, start=1):
             self.handle_input_file(image, filename=f"input_{index}.png")
 
@@ -192,10 +219,12 @@ class Predictor(BasePredictor):
             total_images=len(images),
             interpolate=interpolate,
             color_correction=color_correction,
+            max_width=max_width,
+            max_height=max_height,
         )
 
         wf = self.comfyUI.load_workflow(workflow)
         self.comfyUI.connect()
         self.comfyUI.run_workflow(wf)
 
-        return self.comfyUI.get_files(OUTPUT_DIR)
+        return self.comfyUI.get_files(OUTPUT_DIR, file_extensions=["mp4"])

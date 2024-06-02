@@ -57,9 +57,9 @@
       "format": "video/h264-mp4",
       "pix_fmt": "yuv420p",
       "crf": 19,
-      "save_metadata": true,
+      "save_metadata": false,
       "pingpong": false,
-      "save_output": false,
+      "save_output": true,
       "images": [
         "67",
         0
@@ -190,7 +190,7 @@
         2
       ],
       "interpolation": "lanczos",
-      "keep_proportion": false,
+      "method": "stretch",
       "condition": "always",
       "multiple_of": 8,
       "image": [
@@ -225,7 +225,7 @@
       "width": 512,
       "height": 512,
       "interpolation": "lanczos",
-      "keep_proportion": true,
+      "method": "keep proportion",
       "condition": "always",
       "multiple_of": 8,
       "image": [
@@ -257,13 +257,13 @@
     "inputs": {
       "frame_rate": 16,
       "loop_count": 0,
-      "filename_prefix": "Interpolated",
+      "filename_prefix": "ToonCrafterInterpolated",
       "format": "video/h264-mp4",
       "pix_fmt": "yuv420p",
       "crf": 19,
-      "save_metadata": true,
+      "save_metadata": false,
       "pingpong": false,
-      "save_output": false,
+      "save_output": true,
       "images": [
         "71",
         0
