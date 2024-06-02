@@ -117,17 +117,17 @@ class Predictor(BasePredictor):
             default="",
         ),
         negative_prompt: str = Input(
-            description="Things you do not want to see in your image",
+            description="Things you do not want to see in your video",
             default="",
         ),
         max_width: int = Input(
-            description="Width of the image",
+            description="Maximum width of the video",
             default=512,
             ge=256,
             le=768,
         ),
         max_height: int = Input(
-            description="Height of the image",
+            description="Maximum height of the video",
             default=512,
             ge=256,
             le=768,
@@ -175,11 +175,11 @@ class Predictor(BasePredictor):
             default=False,
         ),
         interpolate: bool = Input(
-            description="Interpolate video",
+            description="Enable 2x interpolation using FILM",
             default=False,
         ),
         color_correction: bool = Input(
-            description="Color correction",
+            description="If the colors are coming out strange, or if the colors between your input images are very different, disable this",
             default=True,
         ),
         seed: int = seed_helper.predict_seed(),
