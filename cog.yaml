@@ -5,7 +5,7 @@ build:
     - ffmpeg
   python_version: "3.10.6"
   python_packages:
-    - torch
+    - torch==2.2.2
     - torchvision
     - torchaudio
     - torchsde
@@ -24,7 +24,7 @@ build:
     - xformers
 
     # layerdiffuse
-    - diffusers>=0.25.0
+    - diffusers==0.28.2
 
     # fix for pydantic issues in cog
     # https://github.com/replicate/cog/issues/1623
@@ -72,7 +72,7 @@ build:
     - color-matcher
 
     # DynamicCrafter
-    - pytorch_lightning>=2.2.1
+    - pytorch_lightning==2.2.5
     - open_clip_torch>=2.23.0
   run:
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.1/pget_linux_x86_64" && chmod +x /usr/local/bin/pget

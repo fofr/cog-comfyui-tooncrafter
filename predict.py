@@ -20,6 +20,10 @@ mimetypes.add_type("image/webp", ".webp")
 # Save your example JSON to the same directory as predict.py
 api_json_file = "workflow_api.json"
 
+os.environ["HF_DATASETS_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+
 
 class Predictor(BasePredictor):
     def setup(self):

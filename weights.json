@@ -476,8 +476,5 @@
   "GLIGEN": [
     "gligen_sd14_textbox_pruned.safetensors",
     "gligen_sd14_textbox_pruned_fp16.safetensors"
-  ],
-  "DYNAMICRAFTER": [
-    "tooncrafter_512_interp-fp16.safetensors"
   ]
 }
